@@ -2,6 +2,20 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.1.4.
 
+## Setup
+
+Setup [new](https://angular.io/cli/new) project
+```
+ng new vorba-blog
+```
+NOTE: include routing make styling as SCSS
+
+Add Material
+```
+ng add @angular/material
+```
+NOTES: select theme of [indigo-pink](https://material.angular.io?theme=indigo-pink), set up global Angular Material typography styles, and include animations
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

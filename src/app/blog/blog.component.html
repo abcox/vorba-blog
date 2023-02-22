@@ -1,0 +1,86 @@
+<mat-card>
+    <mat-card-title>
+        {{title}}
+        <mat-card-title-group>
+            
+        </mat-card-title-group>
+    </mat-card-title>
+    <mat-card-header>
+        <!-- <mat-card>
+            <ul *ngFor="let post of posts, let i = index">
+                <li>
+                    {{post.title}}
+                </li>
+            </ul>
+        </mat-card> -->
+</mat-card-header>
+    <mat-card-content>
+        <mat-grid-list cols="4" rowHeight="100px">
+            <mat-grid-tile colspan="3" rowspan="1">
+                <!-- <form> -->
+                    <!-- <div layout="row" layout-align="center center"> -->
+                    <mat-form-field subscriptSizing="dynamic">
+                        <mat-label>Url</mat-label>
+                        <input
+                            matInput placeholder="Url"
+                            [(ngModel)]="blog.url"
+                            name="url">
+                    </mat-form-field>
+                <!-- </form> -->
+            </mat-grid-tile>
+            <mat-grid-tile>
+                <button mat-button (click)="add()">
+                    Add
+                </button>
+            </mat-grid-tile>
+        </mat-grid-list>
+            <!-- </div> -->
+        <!-- <ul *ngFor="let blog of blogs, let i = index">
+            <li>
+                <a (click)="getPosts(blog.blogId)">{{blog.url}}</a>
+            </li>
+        </ul> -->
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+            <!--- Note that these columns can be defined in any order.
+                  The actual rendered columns are set as a property on the row definition" -->
+          
+            <!-- Id Column -->
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> Id </th>
+                <td mat-cell *matCellDef="let element">
+                    <!-- <a routerLink="" (click)="getPosts(element.blogId)"> -->
+                    <a [routerLink]="['/blog', element.blogId]">
+                        {{element.blogId}}
+                    </a>
+                </td>
+              </ng-container>
+
+              <!-- Url Column -->
+              <ng-container matColumnDef="url">
+                  <th mat-header-cell *matHeaderCellDef>Url</th>
+                  <td mat-cell *matCellDef="let element">
+                      <a [href]="element.url" target="_blank" rel="noopener noreferrer">
+                          {{element.url}}   
+                      </a>
+                  </td>
+                </ng-container>
+          
+                <!-- Delete -->
+                <ng-container matColumnDef="delete">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-button color="primary"
+                            (click)="deleteBlog(element.blogId)">
+                            Delete
+                        </button>
+                    </td>
+                </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+    </mat-card-content>
+    <mat-card-footer>
+    </mat-card-footer>
+</mat-card>

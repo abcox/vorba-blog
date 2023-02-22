@@ -1,0 +1,28 @@
+mat-card {
+    mat-card-title {
+        margin: 20px;
+    }
+    //mat-card-header {
+    //    display: flex;
+    //    justify-content: space-between;
+    //}
+}
+//mat-grid-list {
+//    display: flex;
+//    justify-content: start;
+//
+//    mat-grid-tile {
+//        display: flex;
+//        justify-content: start;
+//    }
+//}
+//
+mat-form-field {
+    //justify-self: start;
+    width: 100%;
+}
+
+ul {
+    list-style-type: none; /* Remove bullets */
+    margin: 20;
+}

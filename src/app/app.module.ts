@@ -12,6 +12,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { BlogComponent } from './blog/blog.component';
 import { PostComponent } from './post/post.component';
 import { FormsModule } from '@angular/forms';
+import { SchedulerComponent } from './scheduler/scheduler.component';
 
 //import { routing } from './app-routing.module';
 
@@ -26,7 +27,8 @@ export function apiConfigFactory (): Configuration {
   declarations: [
     AppComponent,
     BlogComponent,
-    PostComponent
+    PostComponent,
+    SchedulerComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,32 @@
+<mat-card>
+    <mat-card-title>
+        {{title}}
+    </mat-card-title>
+    <mat-card-content>
+        <div class="container">
+            <div>
+                <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input
+                        matInput placeholder="Name"
+                        [(ngModel)]="contact.name"
+                        name="name">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>Email</mat-label>
+                    <input
+                        matInput placeholder="Email"
+                        [(ngModel)]="contact.email"
+                        name="email">
+                </mat-form-field>
+        </div>
+            <div class="buttons">
+                <button mat-button color="primary" *ngFor="let availableTime of availableTimes"
+                    (click)="selectTime(availableTime)">
+                    {{availableTime}}
+                </button>
+            </div>
+        </div>
+    </mat-card-content>
+</mat-card>
+

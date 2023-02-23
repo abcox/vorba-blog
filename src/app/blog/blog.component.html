@@ -15,8 +15,17 @@
         </mat-card> -->
 </mat-card-header>
     <mat-card-content>
-        <mat-grid-list cols="4" rowHeight="100px">
-            <mat-grid-tile colspan="3" rowspan="1">
+        <mat-grid-list cols="8" rowHeight="100px">
+            <mat-grid-tile colspan="1" rowspan="1" *ngIf="blog.blogId">
+                <mat-form-field subscriptSizing="dynamic" style="margin-right:20px;">
+                    <mat-label>Id</mat-label>
+                    <input
+                        matInput placeholder="Id"
+                        [(ngModel)]="blog.blogId"
+                        name="id" readonly>
+                </mat-form-field>
+            </mat-grid-tile>
+            <mat-grid-tile colspan="4" rowspan="1">
                 <!-- <form> -->
                     <!-- <div layout="row" layout-align="center center"> -->
                     <mat-form-field subscriptSizing="dynamic">
@@ -29,17 +38,15 @@
                 <!-- </form> -->
             </mat-grid-tile>
             <mat-grid-tile>
-                <button mat-button (click)="add()">
-                    Add
+                <button mat-button (click)="update()" *ngIf="blog.blogId">
+                    Update
+                </button>
+                <button mat-button (click)="create()" style="margin-left:20px;">
+                    Create
                 </button>
             </mat-grid-tile>
         </mat-grid-list>
             <!-- </div> -->
-        <!-- <ul *ngFor="let blog of blogs, let i = index">
-            <li>
-                <a (click)="getPosts(blog.blogId)">{{blog.url}}</a>
-            </li>
-        </ul> -->
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
 
             <!--- Note that these columns can be defined in any order.
@@ -49,7 +56,6 @@
             <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef> Id </th>
                 <td mat-cell *matCellDef="let element">
-                    <!-- <a routerLink="" (click)="getPosts(element.blogId)"> -->
                     <a [routerLink]="['/blog', element.blogId]">
                         {{element.blogId}}
                     </a>
@@ -73,6 +79,17 @@
                         <button mat-button color="primary"
                             (click)="deleteBlog(element.blogId)">
                             Delete
+                        </button>
+                    </td>
+                </ng-container>
+          
+                <!-- Edit -->
+                <ng-container matColumnDef="edit">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-button color="primary"
+                            (click)="selectBlogForEdit(element)">
+                            Edit
                         </button>
                     </td>
                 </ng-container>

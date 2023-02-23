@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 //import * as api from 'vorba-blog-api';
-import { BlogService, PostService, Blog, Post } from '../core/api/v1';
+import { BlogService, Blog, Post } from '../core/api/v1';
 
 @Component({
   selector: 'app-blog',
@@ -15,9 +15,8 @@ export class BlogComponent implements OnInit {
   title = "Blogs";
   data!: any;
   blogs!: Blog[];
-  posts!: Post[];
   dataSource = new MatTableDataSource<Blog>;
-  displayedColumns = ['id','url','delete'];
+  displayedColumns = ['id','url','delete','edit'];
   blog = {} as Blog;
 
   //constructor(private apiGateway: api.BlogService) { }
@@ -36,46 +35,15 @@ export class BlogComponent implements OnInit {
     });
   }
 
-  async getBlogs() {
-    try {
-      const res: any = await this.blogService.getBlogList();
-      console.log(`res: ${JSON.stringify(res)}`);
-      //this.blogs = res.data;
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  getPosts(blogId: number | undefined) {
-    try {
-      if (blogId === undefined) return;
-      this.blogService.getPosts(blogId).subscribe((res: any) => {
-        console.log(`res: ${JSON.stringify(res)}`);
-        this.posts = res;
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  //async getPost(id: number) {
-  //  try {
-  //    const res = await this.postService.getPost(id);
-  //    if (!res) {
-  //      console.log('response empty');
-  //      return;
-  //    }
-  //    console.log(res);
-  //    res.subscribe(res => {
-  //      console.log(JSON.stringify(res));
-  //    });
-  //  } catch (err) {
-  //    console.error(err);
-  //  }
-  //}
-
-  add() {
+  create() {
+    this.blog.blogId = undefined;
     this.blogService.createBlog(this.blog).subscribe(res => console.log(res));
+    window.location.reload();
+  }
+
+  update() {
+    if (!this.blog.blogId) return;
+    this.blogService.updateBlog(this.blog.blogId, this.blog).subscribe(res => console.log(res));
     window.location.reload();
   }
 
@@ -88,5 +56,9 @@ export class BlogComponent implements OnInit {
     this.router.navigate(['/blogs']).then(() => {
       window.location.reload();
     });
+  }
+
+  selectBlogForEdit(blog: Blog) {
+    this.blog = blog;
   }
 }

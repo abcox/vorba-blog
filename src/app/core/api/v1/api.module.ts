@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { BlogService } from './api/blog.service';
 import { PostService } from './api/post.service';
+import { ScheduleService } from './api/schedule.service';
 import { TestService } from './api/test.service';
 
 @NgModule({

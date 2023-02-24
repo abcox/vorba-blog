@@ -1,49 +1,35 @@
 <mat-card>
     <mat-card-title>
         {{title}}
-        <mat-card-title-group>
+        <!-- <mat-card-title-group>
             
-        </mat-card-title-group>
+        </mat-card-title-group> -->
     </mat-card-title>
-    <mat-card-header>
-        <!-- <mat-card>
+   <!--  <mat-card-header>
+        <mat-card>
             <ul *ngFor="let post of posts, let i = index">
                 <li>
                     {{post.title}}
                 </li>
             </ul>
-        </mat-card> -->
-</mat-card-header>
+        </mat-card>
+</mat-card-header> -->
     <mat-card-content>
         <mat-grid-list cols="8" rowHeight="100px">
-            <mat-grid-tile colspan="1" rowspan="1" *ngIf="blog.blogId">
-                <mat-form-field subscriptSizing="dynamic" style="margin-right:20px;">
-                    <mat-label>Id</mat-label>
-                    <input
-                        matInput placeholder="Id"
-                        [(ngModel)]="blog.blogId"
-                        name="id" readonly>
-                </mat-form-field>
-            </mat-grid-tile>
             <mat-grid-tile colspan="4" rowspan="1">
-                <!-- <form> -->
-                    <!-- <div layout="row" layout-align="center center"> -->
-                    <mat-form-field subscriptSizing="dynamic">
-                        <mat-label>Url</mat-label>
-                        <input
-                            matInput placeholder="Url"
-                            [(ngModel)]="blog.url"
-                            name="url">
-                    </mat-form-field>
-                <!-- </form> -->
-            </mat-grid-tile>
-            <mat-grid-tile>
-                <button mat-button (click)="update()" *ngIf="blog.blogId">
-                    Update
-                </button>
-                <button mat-button (click)="create()" style="margin-left:20px;">
-                    Create
-                </button>
+                <mat-form-field subscriptSizing="dynamic">
+                    <input
+                        matInput placeholder=""
+                        [(ngModel)]="blogUrlSearchString"
+                        name="search">
+                    <button mat-icon-button matPrefix (click)="searchBlogs22()">
+                        <mat-icon>search</mat-icon>
+                    </button>
+                    <button *ngIf="blogUrlSearchString.length > 0" matSuffix mat-icon-button
+                        (click)="clearSearch()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
             </mat-grid-tile>
         </mat-grid-list>
             <!-- </div> -->
@@ -99,5 +85,41 @@
         </table>
     </mat-card-content>
     <mat-card-footer>
+        <mat-paginator #paginator
+            [pageSizeOptions]="pageSizeOptions"
+            showFirstLastButtons
+            aria-label="Select page of periodic elements">
+        </mat-paginator>
+        <mat-grid-list cols="8" rowHeight="100px">
+            <mat-grid-tile colspan="1" rowspan="1" *ngIf="blog.blogId">
+                <mat-form-field subscriptSizing="dynamic" style="margin-right:20px;">
+                    <mat-label>Id</mat-label>
+                    <input
+                        matInput placeholder="Id"
+                        [(ngModel)]="blog.blogId"
+                        name="id" readonly>
+                </mat-form-field>
+            </mat-grid-tile>
+            <mat-grid-tile colspan="4" rowspan="1">
+                <!-- <form> -->
+                    <!-- <div layout="row" layout-align="center center"> -->
+                    <mat-form-field subscriptSizing="dynamic">
+                        <mat-label>Url</mat-label>
+                        <input
+                            matInput placeholder="Url"
+                            [(ngModel)]="blog.url"
+                            name="url">
+                    </mat-form-field>
+                <!-- </form> -->
+            </mat-grid-tile>
+            <mat-grid-tile>
+                <button mat-button (click)="update()" *ngIf="blog.blogId">
+                    Update
+                </button>
+                <button mat-button (click)="create()" style="margin-left:20px;">
+                    Create
+                </button>
+            </mat-grid-tile>
+        </mat-grid-list>
     </mat-card-footer>
 </mat-card>

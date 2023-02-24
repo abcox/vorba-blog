@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 //import * as api from 'vorba-blog-api';
-import { BlogService, Blog, Post } from '../core/api/v1';
+import { BlogService, Blog, Post, BlogSearchRequest } from '../core/api/v1';
+import {MatPaginator} from '@angular/material/paginator';
 
 @Component({
   selector: 'app-blog',
   templateUrl: './blog.component.html',
   styleUrls: ['./blog.component.scss']
 })
-export class BlogComponent implements OnInit {
+export class BlogComponent implements OnInit, AfterViewInit {
 
   title = "Blogs";
   data!: any;
@@ -18,6 +19,15 @@ export class BlogComponent implements OnInit {
   dataSource = new MatTableDataSource<Blog>;
   displayedColumns = ['id','url','delete','edit'];
   blog = {} as Blog;
+
+  pageSizeOptions = [5, 10, 20];
+  totalItems = 0;
+  blogSearchUrl = '';
+  pageIndex = 1;
+  pageSize = 5;
+  blogUrlSearchString = '';
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   //constructor(private apiGateway: api.BlogService) { }
   constructor(
@@ -28,10 +38,66 @@ export class BlogComponent implements OnInit {
       }
   
   ngOnInit() {
+    //this.getBlogList();
+    //this.searchBlogs();
+  }
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.paginator.page.subscribe(page => {
+      console.log(`page: `, page);
+      this.searchBlogs2(page.pageIndex, page.pageSize);
+    });
+    this.searchBlogs2(0, 5);
+  }
+
+  clearSearch() {
+    this.blogUrlSearchString='';
+  }
+
+  searchBlogs(pageIndex: number, pageSize: number) {
+    this.blogService.searchBlogs(
+      this.blogSearchUrl,
+      pageSize,
+      pageIndex
+      ).subscribe((res: any) => {
+        console.log(`res: ${JSON.stringify(res)}`);
+        this.blogs = res;
+        this.dataSource = res.data;
+        console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
+        this.totalItems = res.length;
+        this.paginator.length = res.totalItems;
+      });
+  }
+  
+  searchBlogs22() {
+    const pageIndex = this.paginator.pageIndex;
+    const pageSize = this.paginator.pageSize;
+    this.searchBlogs2(pageIndex, pageSize);
+  }
+
+  searchBlogs2(pageIndex: number, pageSize: number) {
+    const pageNumber = pageIndex ?? this.paginator.pageIndex;
+    pageSize = pageSize ?? this.paginator.pageSize;
+    const req = { q: this.blogUrlSearchString, pageNumber, pageSize } as BlogSearchRequest;
+    console.log(`req: ${JSON.stringify(req)}`);
+    this.blogService.searchBlogs2(req).subscribe((res: any) => {
+        console.log(`res: ${JSON.stringify(res)}`);
+        this.blogs = res;
+        this.dataSource = res.data;
+        console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
+        this.totalItems = res.length;
+        this.paginator.length = res.totalItems;
+      });
+  }
+
+  getBlogList() {
     this.blogService.getBlogList().subscribe((res: any) => {
       //console.log(`res: ${JSON.stringify(res)}`);
       this.blogs = res;
       this.dataSource = res;
+      console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
+      this.totalItems = res.length;
     });
   }
 

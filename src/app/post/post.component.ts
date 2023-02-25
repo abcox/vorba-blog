@@ -1,6 +1,4 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
-import { MatCard } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -26,7 +24,6 @@ export class PostComponent implements AfterViewInit {
   selectedPost!: Post;
   postSearchString = '';
 
-  //@ViewChild(MatCard) editCard!: MatCard;
   editCardVisible = false;
 
   pageSizeOptions = [5,10,15];
@@ -59,7 +56,7 @@ export class PostComponent implements AfterViewInit {
         if (!!id && id !== 'null') {
           this.id = id;
           console.log(`id: ${id}`);
-          return of(this.submitSearch()); //.then((resp: any) => (resp.data as unknown) as Post));
+          return of(this.submitSearch());
           //return of()
         } else {
           this.id = null;
@@ -118,11 +115,6 @@ export class PostComponent implements AfterViewInit {
     this.searchPosts22();
   }
 
-  getPosts(id: number) {
-    id = id ?? this.id;
-    return this.blogService.getPosts(id);
-  }
-
   selectPost(post: Post) {
     this.selectedPost = post;
     console.log(`selected post id: ${post.postId}`);
@@ -137,17 +129,48 @@ export class PostComponent implements AfterViewInit {
   
   save() {
     if (!(this.editedPost?.postId)) {
-      //console.warn(`post id empty`);
-      //return;
-      console.warn(`post: ${JSON.stringify(this.editedPost)}`);
-      this.postService.createPost(this.editedPost).subscribe(res => console.log(res));
+      this.createPost();
     } else {
-      console.log(`post id: ${this.editedPost.postId}`);
-      this.postService.updatePost(this.editedPost.postId, this.editedPost).subscribe(res => console.log(res));
-      this.editCardVisible = false;
-      console.log(`id: ${this.id}`);
+      this.updatePost();
     }
-    this.reload();
+  }
+
+  reportSuccessAndRefresh(context: string) {
+    this.openSnackBar(`${context} successful`, 'Ok').afterDismissed().subscribe(() => this.reload());
+  }
+
+  reportFailure(context: string, err: any = undefined) {
+    console.error(err);
+    this.openSnackBar(`${context} successful`, 'Ok');
+  }
+
+  async createPost() {
+    const context = 'Create';
+    try {
+      console.warn(`post: ${JSON.stringify(this.editedPost)}`);
+      const res = await firstValueFrom(this.postService.createPost(this.editedPost));
+      this.editCardVisible = false;
+      this.reportSuccessAndRefresh(context);
+    } catch (err) {
+      this.reportFailure(context, err);
+    }
+  }
+
+  async updatePost() {
+    const context = 'Update';
+    if (!(this.editedPost?.postId)) {
+      console.error(`postId undefined`);
+      return;
+    }
+    try {
+      //console.log(`post id: ${this.editedPost.postId}`);
+      const res = await firstValueFrom(this.postService.updatePost(this.editedPost.postId, this.editedPost));
+      this.editCardVisible = false;
+      this.reportSuccessAndRefresh(context);
+      console.log(`id: ${this.id}`);
+    } catch (err) {
+      this.reportFailure(context, err);
+    }
   }
 
   add() {
@@ -155,11 +178,15 @@ export class PostComponent implements AfterViewInit {
     this.editCardVisible = true;
   }
 
-  deletePost(id: number) {
-    this.postService.deletePost(id).subscribe(res => {
-      console.log(res)
-      this.reload();
-    });
+  async deletePost(id: number) {
+    const context = 'Delete';
+    try {
+      await firstValueFrom(this.postService.deletePost(id));
+      this.reportSuccessAndRefresh(context);
+    } catch (err) {
+      console.error(err);
+      this.reportFailure(context, err);
+    }
   }
   
   reload() {
@@ -169,18 +196,18 @@ export class PostComponent implements AfterViewInit {
   }
 
   async copyPost(post: Post) {
+    const context = 'Copy';
     if (!post) {
-      console.error(`post empty`);
+      this.reportFailure(`${context}: post empty`);
       return;
     }
     post.postId = undefined;
     try {
       const res = await firstValueFrom(this.postService.createPost(post));
       //console.log(`copyPost res: ${JSON.stringify(res)}`);
-      this.openSnackBar('Copy successful', 'Ok').afterDismissed().subscribe(() => this.reload());
+      this.reportSuccessAndRefresh(context);
     } catch (err) {
-      //console.error(err);
-      this.openSnackBar('Copy failed', 'Ok');
+      this.reportFailure(context, err);
     }
   }
 }

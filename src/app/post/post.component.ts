@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatCard } from '@angular/material/card';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, switchMap, tap } from 'rxjs';
+import { config, debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, switchMap, tap, firstValueFrom } from 'rxjs';
 import { Post, BlogService, PostService } from '../core/api/v1';
 
 @Component({
@@ -35,7 +36,8 @@ export class PostComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
     private blogService: BlogService,
-    private postService: PostService
+    private postService: PostService,
+    private snackBar: MatSnackBar
   ) {
     // nothing
   }
@@ -57,7 +59,7 @@ export class PostComponent implements AfterViewInit {
         if (!!id && id !== 'null') {
           this.id = id;
           console.log(`id: ${id}`);
-          return from(this.getPosts(id)); //.then((resp: any) => (resp.data as unknown) as Post));
+          return of(this.submitSearch()); //.then((resp: any) => (resp.data as unknown) as Post));
           //return of()
         } else {
           this.id = null;
@@ -69,6 +71,7 @@ export class PostComponent implements AfterViewInit {
         }
       }
     ));
+
     this.$posts.subscribe(posts => {
       this.posts = posts as Array<Post>;
       this.dataSource = new MatTableDataSource<Post>(this.posts);
@@ -80,22 +83,28 @@ export class PostComponent implements AfterViewInit {
     });
   }
 
+  openSnackBar(message: string, action: string | undefined, duration: number = 3000) {
+    return this.snackBar.open(message, action, {
+      duration
+    });
+  }
+
   submitSearch() {    
-    this.searchPosts22(); // todo: debounce with rxjs
+    return this.searchPosts22(); // todo: debounce with rxjs
   }
 
   searchPosts22() {
     const pageIndex = this.paginator.pageIndex;
     const pageSize = this.paginator.pageSize;
-    this.searchPosts2(pageIndex, pageSize);
+    return this.searchPosts2(pageIndex, pageSize);
   }
 
   searchPosts2(pageIndex: number, pageSize: number) {
     const id = this.id;
     console.log(`q: ${this.postSearchString}`);
-    return this.blogService.searchPosts(
+    return from(this.blogService.searchPosts(
       id, this.postSearchString, pageSize, pageIndex
-      ).subscribe((res: any) => {        
+      )).subscribe((res: any) => {        
         console.log(`res: ${JSON.stringify(res)}`);
         this.dataSource = res.data;
         console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
@@ -154,18 +163,24 @@ export class PostComponent implements AfterViewInit {
   }
   
   reload() {
-    this.router.navigate(['/blog', this.id]).then(() => {
+    return this.router.navigate(['/blog', this.id]).then(() => {
       window.location.reload();
     });
   }
 
-  copyPost(post: Post) {
+  async copyPost(post: Post) {
     if (!post) {
       console.error(`post empty`);
       return;
     }
     post.postId = undefined;
-    this.postService.createPost(post).subscribe(res => console.log(res));
-    window.location.reload();
+    try {
+      const res = await firstValueFrom(this.postService.createPost(post));
+      //console.log(`copyPost res: ${JSON.stringify(res)}`);
+      this.openSnackBar('Copy successful', 'Ok').afterDismissed().subscribe(() => this.reload());
+    } catch (err) {
+      //console.error(err);
+      this.openSnackBar('Copy failed', 'Ok');
+    }
   }
 }

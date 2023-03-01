@@ -1,21 +1,24 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { config, debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, switchMap, tap, firstValueFrom } from 'rxjs';
-import { Post, BlogService, PostService } from '../core/api/v1';
+import { config, debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, switchMap, tap, firstValueFrom, Subscription, startWith, delay } from 'rxjs';
+import { Post, BlogService, PostService as postService, PostsSearchRequest } from '../core/api/v1';
+import * as PostsPageActions from './store/post-component.actions';
+import { Store } from '@ngrx/store';
+import { PostService } from './post.service';
+import { pagination, posts } from './store/post-component.selectors'
 
 @Component({
   selector: 'app-post',
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.scss']
 })
-export class PostComponent implements AfterViewInit {
+export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, OnDestroy {
   title = "Posts"
-  $id!: Observable<any>;
+  id$!: Subscription;
   id: any;
-  $posts!: Observable<unknown>; // Post
   posts!: Post[];
   dataSource = new MatTableDataSource<Post>;
   displayedColumns = ['title','content','copy','edit','delete'];
@@ -29,90 +32,132 @@ export class PostComponent implements AfterViewInit {
   pageSizeOptions = [5,10,15];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  posts$!: Observable<Post[] | undefined>;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private blogService: BlogService,
-    private postService: PostService,
-    private snackBar: MatSnackBar
+    private postService: postService,
+    private snackBar: MatSnackBar,
+    private store: Store,
+    private postService2: PostService
   ) {
+    this.posts$ = store.select(posts);
+    this.posts$.subscribe(payload => console.log(`posts: ${JSON.stringify(payload)}`));
+    
+    //store.select(posts).subscribe(res => console.log(`*** res: ${res}`));
+  }
+  ngOnDestroy(): void {
+    //throw new Error('Method not implemented.');
+    this.id$.unsubscribe();
+  }
+
+  test() {
+    //this.store.dispatch(PostsPageActions.opened());   // connect dispatch
+    const request = {blogId: 3, q: '', pageNumber: 0, pageSize: 5} as PostsSearchRequest
+    this.store.dispatch(PostsPageActions.searchPosts({request}));   // connect dispatch
+  }
+
+  ngOnInit(): void {
+    // nothing
+  }
+
+  ngAfterContentInit(): void {
     // nothing
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
-    console.log(`post component`);
+    //console.log(`post component`);
 
-    this.$id = this.route.paramMap.pipe(
-      map(param => param.get('id')),
-      //filter(id => id !== null)
-    ) as Observable<any>;
+    this.id$ = this.route.paramMap.subscribe(paramMap => {
+      this.id = paramMap.get('id');
+      this.search();
+    });
 
-    this.$posts = this.$id.pipe(
-      //tap((id: any) => console.log(`id: ${id}`)),
-      debounceTime(500),
-      distinctUntilChanged(),
-      switchMap(id => {
-        if (!!id && id !== 'null') {
-          this.id = id;
-          console.log(`id: ${id}`);
-          return of(this.submitSearch());
-          //return of()
-        } else {
-          this.id = null;
-          return of({
-            name: '',
-            email: '',
-            phone: ''
-          } as Post);
-        }
-      }
-    ));
+    //this.$posts.subscribe(posts => {
+    //  //this.posts = posts as Array<Post>;
+    //  this.dataSource = new MatTableDataSource<Post>(posts as Array<Post>);
+    //});
 
-    this.$posts.subscribe(posts => {
-      this.posts = posts as Array<Post>;
-      this.dataSource = new MatTableDataSource<Post>(this.posts);
+    this.posts$.subscribe(posts => {
+      //this.posts = posts as Array<Post>;
+      this.dataSource = new MatTableDataSource<Post>(posts as Array<Post>);
     });
     
-    this.paginator.page.subscribe(page => {
-      console.log(`page: `, page);
-      this.searchPosts2(page.pageIndex, page.pageSize);
-    });
+    this.paginator.page.pipe(
+      startWith(null),
+      map((pageEvent: PageEvent | null) => {
+        console.log(`page: `, pageEvent);
+        //this.searchPosts3(page.pageIndex, page.pageSize);
+        this.store.dispatch(PostsPageActions.searchPosts({
+          request: {
+            blogId: this.id,
+            q: this.postSearchString,
+            pageNumber: pageEvent?.pageIndex ?? 0,
+            pageSize: pageEvent?.pageSize ?? 5
+          }
+        }));   // connect dispatch
+      })
+    ).subscribe();
+    
+    //const request: PostsSearchRequest = { blogId: this.id, q: this.postSearchString, pageNumber: this.paginator.pageIndex, pageSize: this.paginator.pageSize };
+    //this.store.dispatch(PostsPageActions.searchPosts({request}));   // connect dispatch
+    //this.store.dispatch(PostsPageActions.searchPosts({request: { blogId: this.id, q: this.postSearchString, pageNumber: this.paginator.pageIndex, pageSize: this.paginator.pageSize }}));   // connect dispatch
+    
+    this.store.select(pagination).pipe(
+      // prevent error: 'ExpressionChangedAfterItHasBeenCheckedError'
+      // Ref: https://blog.angular-university.io/angular-debugging/
+      delay(0),
+      map(pagination => {
+        if (this.paginator) {
+          let pageNumber = pagination?.pageNumber ?? 0;
+          pageNumber--;
+          this.paginator.pageIndex = pageNumber;
+          this.paginator.length = pagination.totalItems;
+        }
+      })
+    ).subscribe();
   }
 
-  openSnackBar(message: string, action: string | undefined, duration: number = 3000) {
-    return this.snackBar.open(message, action, {
-      duration
-    });
-  }
-
-  submitSearch() {    
-    return this.searchPosts22(); // todo: debounce with rxjs
-  }
-
-  searchPosts22() {
+  search2() {
+    const id = this.id;
     const pageIndex = this.paginator.pageIndex;
     const pageSize = this.paginator.pageSize;
-    return this.searchPosts2(pageIndex, pageSize);
-  }
-
-  searchPosts2(pageIndex: number, pageSize: number) {
-    const id = this.id;
-    console.log(`q: ${this.postSearchString}`);
-    return from(this.blogService.searchPosts(
-      id, this.postSearchString, pageSize, pageIndex
+    return from(this.postService2.search(
+      id, this.postSearchString, pageIndex, pageSize
       )).subscribe((res: any) => {        
-        console.log(`res: ${JSON.stringify(res)}`);
         this.dataSource = res.data;
-        console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
         //this.totalItems = res.length;
         this.paginator.length = res.totalItems;
-      }); // todo: add searchPosts
+      });
+  }
+
+  search() {
+    this.store.dispatch(PostsPageActions.searchPosts({
+      request: {
+        blogId: this.id,
+        q: this.postSearchString,
+        pageNumber: this.paginator.pageIndex,
+        pageSize: this.paginator.pageSize
+      }
+    }));
+  }
+
+  openSnackBar(
+    message: string, action: string | undefined,
+    duration: number = 3000
+    ) {
+      return this.snackBar.open(message, action, {
+        duration
+      });
   }
 
   clearSearch() {
     this.postSearchString='';
-    this.searchPosts22();
+    //this.searchPosts22();
+    return this.search();
   }
 
   selectPost(post: Post) {
@@ -136,7 +181,9 @@ export class PostComponent implements AfterViewInit {
   }
 
   reportSuccessAndRefresh(context: string) {
-    this.openSnackBar(`${context} successful`, 'Ok').afterDismissed().subscribe(() => this.reload());
+    this.openSnackBar(`${context} successful`, 'Ok')
+      .afterDismissed()
+      .subscribe(() => this.reload());
   }
 
   reportFailure(context: string, err: any = undefined) {
@@ -147,7 +194,7 @@ export class PostComponent implements AfterViewInit {
   async createPost() {
     const context = 'Create';
     try {
-      console.warn(`post: ${JSON.stringify(this.editedPost)}`);
+      console.log(`post: ${JSON.stringify(this.editedPost)}`);
       const res = await firstValueFrom(this.postService.createPost(this.editedPost));
       this.editCardVisible = false;
       this.reportSuccessAndRefresh(context);

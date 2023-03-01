@@ -16,6 +16,19 @@ ng add @angular/material
 ```
 NOTES: select theme of [indigo-pink](https://material.angular.io?theme=indigo-pink), set up global Angular Material typography styles, and include animations
 
+## State
+
+Creation steps:
+1. Actions
+2. Reducers
+3. Selectors
+4. Effects
+
+
+See [this tutorial](https://dev.to/ngrx/ngrx-action-group-creator-1deh)
+See [Angular Bootcamp](https://github.com/AngularBootCamp) for latest (v15)
+See [this example](https://github.com/loiane/angular-ngrx-example)
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

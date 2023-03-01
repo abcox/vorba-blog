@@ -14,6 +14,12 @@ import { PostComponent } from './post/post.component';
 import { FormsModule } from '@angular/forms';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+
+import * as fromPost from './post/store/post-component.reducers';
+import { PostEffects } from './post/store/post-component.effects';
+
 //import { routing } from './app-routing.module';
 
 export function apiConfigFactory (): Configuration {
@@ -38,7 +44,11 @@ export function apiConfigFactory (): Configuration {
     ApiModule.forRoot(apiConfigFactory),
     HttpClientModule,
     MaterialModule,
-    FormsModule
+    FormsModule,
+    //StoreModule.forRoot(fromPost.postsReducer),
+    StoreModule.forRoot({}),
+    StoreModule.forFeature(fromPost.featureKey, fromPost.postsReducer),
+    EffectsModule.forRoot([PostEffects])
   ],
   providers: [],
   bootstrap: [AppComponent]

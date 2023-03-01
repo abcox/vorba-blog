@@ -12,8 +12,11 @@ git_push.sh
 index.ts
 model/blog.ts
 model/blogSearchRequest.ts
+model/blogSearchResponse.ts
 model/models.ts
 model/post.ts
+model/postsSearchRequest.ts
+model/postsSearchResponse.ts
 ng-package.json
 package.json
 param.ts

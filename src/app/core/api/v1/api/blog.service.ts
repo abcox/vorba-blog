@@ -23,6 +23,8 @@ import { Blog } from '../model/blog';
 // @ts-ignore
 import { BlogSearchRequest } from '../model/blogSearchRequest';
 // @ts-ignore
+import { BlogSearchResponse } from '../model/blogSearchResponse';
+// @ts-ignore
 import { Post } from '../model/post';
 
 // @ts-ignore
@@ -519,9 +521,9 @@ export class BlogService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public searchBlogs2(body?: BlogSearchRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<Post>>;
-    public searchBlogs2(body?: BlogSearchRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<Post>>>;
-    public searchBlogs2(body?: BlogSearchRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<Post>>>;
+    public searchBlogs2(body?: BlogSearchRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<BlogSearchResponse>;
+    public searchBlogs2(body?: BlogSearchRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<BlogSearchResponse>>;
+    public searchBlogs2(body?: BlogSearchRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<BlogSearchResponse>>;
     public searchBlogs2(body?: BlogSearchRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
@@ -574,7 +576,7 @@ export class BlogService {
         }
 
         let localVarPath = `/blogs/search/v2`;
-        return this.httpClient.request<Array<Post>>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<BlogSearchResponse>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: body,

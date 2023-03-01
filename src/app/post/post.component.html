@@ -11,7 +11,7 @@
                         matInput placeholder=""
                         [(ngModel)]="postSearchString"
                         name="search">
-                    <button mat-icon-button matPrefix (click)="submitSearch()">
+                    <button mat-icon-button matPrefix (click)="search()">
                         <mat-icon>search</mat-icon>
                     </button>
                     <button *ngIf="postSearchString.length > 0" matSuffix mat-icon-button
@@ -100,7 +100,7 @@
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
-        <mat-paginator #paginator
+        <mat-paginator #paginator id="paginator"
             [pageSizeOptions]="pageSizeOptions"
             showFirstLastButtons
             aria-label="Select page of periodic elements">
@@ -141,6 +141,9 @@
         <a class="nav-link" [routerLink]="['/blogs']">
             Back
         </a>
+        <!-- <button class="save" mat-button (click)="test()">
+            Test
+        </button> -->
         <button class="save" mat-button (click)="add()">
             Add
         </button>

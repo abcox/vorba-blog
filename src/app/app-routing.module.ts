@@ -5,7 +5,9 @@ import { PostComponent } from './post/post.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 
 export const routes: Routes = [
-  { path: 'blogs', component: BlogComponent },
+  //{ path: '**', title: 'Home', redirectTo: '/' },
+  { path: 'blogs', component: BlogComponent, title: 'Blogs' },
+  { path: 'posts', component: PostComponent, title: 'Posts' },
   { path: 'blog/:id', component: PostComponent },
   { path: 'post/:id', component: PostComponent },
   { path: 'scheduler', component: SchedulerComponent },

@@ -21,7 +21,7 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
   id: any;
   posts!: Post[];
   dataSource = new MatTableDataSource<Post>;
-  displayedColumns = ['title','content','copy','edit','delete'];
+  displayedColumns!: string[];
   post$!: Post;
   editedPost = {} as Post;
   selectedPost!: Post;
@@ -71,8 +71,11 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
     this.dataSource.paginator = this.paginator;
     //console.log(`post component`);
 
-    this.id$ = this.route.paramMap.subscribe(paramMap => {
-      this.id = paramMap.get('id');
+    this.id$ = this.route.paramMap.pipe(      
+      delay(0),
+      map(paramMap => this.id = paramMap.get('id')),
+    ).subscribe(() => {
+      this.displayedColumns = !this.id ? ['blogId','title','content','copy','edit','delete'] : ['title','content','copy','edit','delete'];
       this.search();
     });
 

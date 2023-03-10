@@ -22,7 +22,7 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
   posts!: Post[];
   dataSource = new MatTableDataSource<Post>;
   displayedColumns!: string[];
-  post$!: Post;
+  posts$!: Subscription;
   editedPost = {} as Post;
   selectedPost!: Post;
   postSearchString = '';
@@ -32,7 +32,10 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
   pageSizeOptions = [5,10,15];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  posts$!: Observable<Post[] | undefined>;
+  pagination$!: Subscription;
+  paginator$!: Subscription;
+
+  //posts$!: Observable<Post[] | undefined>;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,14 +46,14 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
     private store: Store,
     private postService2: PostService
   ) {
-    this.posts$ = store.select(posts);
-    this.posts$.subscribe(payload => console.log(`posts: ${JSON.stringify(payload)}`));
-    
-    //store.select(posts).subscribe(res => console.log(`*** res: ${res}`));
+    // nothing
   }
+
   ngOnDestroy(): void {
     //throw new Error('Method not implemented.');
     this.id$.unsubscribe();
+    this.posts$.unsubscribe();
+    this.pagination$.unsubscribe();
   }
 
   test() {
@@ -73,35 +76,41 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
 
     this.id$ = this.route.paramMap.pipe(      
       delay(0),
-      map(paramMap => this.id = paramMap.get('id')),
-    ).subscribe(() => {
-      this.displayedColumns = !this.id ? ['blogId','title','content','copy','edit','delete'] : ['title','content','copy','edit','delete'];
-      this.search();
-    });
+      map(paramMap => {
+        this.id = paramMap.get('id')
+        this.displayedColumns = !this.id ?
+          ['blogId','title','content','copy','edit','delete'] :
+          ['title','content','copy','edit','delete'];
+        this.search();
+      }),
+    ).subscribe();
 
     //this.$posts.subscribe(posts => {
     //  //this.posts = posts as Array<Post>;
     //  this.dataSource = new MatTableDataSource<Post>(posts as Array<Post>);
     //});
 
-    this.posts$.subscribe(posts => {
-      //this.posts = posts as Array<Post>;
-      this.dataSource = new MatTableDataSource<Post>(posts as Array<Post>);
-    });
+    //this.posts$.subscribe(posts => {
+    //  //this.posts = posts as Array<Post>;
+    //  this.dataSource = new MatTableDataSource<Post>(posts as Array<Post>);
+    //});
     
-    this.paginator.page.pipe(
+    this.paginator$ = this.paginator.page.pipe(
       startWith(null),
       map((pageEvent: PageEvent | null) => {
-        console.log(`page: `, pageEvent);
         //this.searchPosts3(page.pageIndex, page.pageSize);
-        this.store.dispatch(PostsPageActions.searchPosts({
-          request: {
-            blogId: this.id,
-            q: this.postSearchString,
-            pageNumber: pageEvent?.pageIndex ?? 0,
-            pageSize: pageEvent?.pageSize ?? 5
-          }
-        }));   // connect dispatch
+        //this.store.dispatch(PostsPageActions.searchPosts({
+        //  request: {
+        //    blogId: this.id,
+        //    q: this.postSearchString,
+        //    pageNumber: pageEvent?.pageIndex ?? 0,
+        //    pageSize: pageEvent?.pageSize ?? 5
+        //  }
+        //}));   // connect dispatch
+        if (pageEvent) {
+          console.log(`page: `, pageEvent);
+          this.search();
+        }
       })
     ).subscribe();
     
@@ -109,7 +118,7 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
     //this.store.dispatch(PostsPageActions.searchPosts({request}));   // connect dispatch
     //this.store.dispatch(PostsPageActions.searchPosts({request: { blogId: this.id, q: this.postSearchString, pageNumber: this.paginator.pageIndex, pageSize: this.paginator.pageSize }}));   // connect dispatch
     
-    this.store.select(pagination).pipe(
+    this.pagination$ = this.store.select(pagination).pipe(
       // prevent error: 'ExpressionChangedAfterItHasBeenCheckedError'
       // Ref: https://blog.angular-university.io/angular-debugging/
       delay(0),
@@ -121,6 +130,11 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
           this.paginator.length = pagination.totalItems;
         }
       })
+    ).subscribe();
+    
+    this.posts$ = this.store.select(posts).pipe(
+      map((posts: Post[] | undefined) =>
+        this.dataSource = new MatTableDataSource<Post>(posts))
     ).subscribe();
   }
 
@@ -171,7 +185,7 @@ export class PostComponent implements OnInit, AfterViewInit, AfterContentInit, O
   }
 
   clearSelectedPost() {
-    this.post$ = {} as Post;
+    //this.post$ = {} as Post;
     this.editCardVisible = false;
   }
   

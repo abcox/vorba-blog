@@ -36,19 +36,20 @@ export class BlogComponent implements OnInit, AfterViewInit {
     ) {
         // nothing
       }
-  
+
   ngOnInit() {
     //this.getBlogList();
     //this.searchBlogs();
-  }
-
-  ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
-    this.paginator.page.subscribe(page => {
+    this.paginator?.page.subscribe(page => {
       console.log(`page: `, page);
       this.searchBlogs2(page.pageIndex, page.pageSize);
     });
     this.searchBlogs2(0, 5);
+  }
+
+  ngAfterViewInit() {
+    // nothing
   }
 
   clearSearch() {
@@ -69,7 +70,27 @@ export class BlogComponent implements OnInit, AfterViewInit {
         this.paginator.length = res.totalItems;
       });
   }
-  
+
+  _selectedViewOption = '1';
+  get selectedViewOption() {
+    return this._selectedViewOption;
+  }
+  set selectedViewOption(value) {
+    this._selectedViewOption = value;
+  }
+  _viewOptions = [
+      { key: '1', value: 'Option 1'},
+      { key: '2', value: 'Option 2'},
+      { key: '3', value: 'Option 3'},
+    ];
+  get viewOptions() {
+    return [
+      { key: '1', value: 'Option 1'},
+      { key: '2', value: 'Option 2'},
+      { key: '3', value: 'Option 3'},
+    ];
+  }
+
   searchBlogs22() {
     const pageIndex = this.paginator.pageIndex;
     const pageSize = this.paginator.pageSize;
@@ -83,7 +104,7 @@ export class BlogComponent implements OnInit, AfterViewInit {
     console.log(`req: ${JSON.stringify(req)}`);
     this.blogService.searchBlogs2(req).subscribe((res: any) => {
         console.log(`res: ${JSON.stringify(res)}`);
-        this.blogs = res;
+        this.blogs = res.data;
         this.dataSource = res.data;
         console.log(`dataSource: ${JSON.stringify(this.dataSource)}`);
         this.totalItems = res.length;
@@ -117,7 +138,7 @@ export class BlogComponent implements OnInit, AfterViewInit {
     this.blogService.deleteBlog(id).subscribe(res => console.log(res));
     this.reload();
   }
-  
+
   reload() {
     this.router.navigate(['/blogs']).then(() => {
       window.location.reload();

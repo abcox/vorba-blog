@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import * as signalR from '@aspnet/signalr';
-//import { HubConnection } from '@aspnet/signalr/dist/esm/HubConnection';
+import * as signalR from '@microsoft/signalr';
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
@@ -29,6 +28,7 @@ export class MessageService {
                 skipNegotiation: true,
                 transport: signalR.HttpTransportType.WebSockets
             })
+            .withAutomaticReconnect()
             .build();
         console.log(`Hub connection built`);
     }
@@ -47,7 +47,7 @@ export class MessageService {
 
     listen(responseMethodName: string) {
         this.hubConnection.on(responseMethodName, (response: string) => {
-            //console.log(`response: ${response}`);
+            console.log(`response: ${response}`);
             this.openSnackBar(response, undefined);
         });
     }
@@ -60,5 +60,5 @@ export class MessageService {
           duration
         });
     }
-  
+
 }
